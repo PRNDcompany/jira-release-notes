@@ -1,4 +1,4 @@
-name: 'Jira Release Notes'
+name: '[Jira] Release Notes Markdown'
 description: 'This action generate release notes markdown from Jira project by version'
 inputs:
   domain:
