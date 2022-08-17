@@ -15,6 +15,10 @@ import * as _ from 'lodash'
         const markdownReleaseNote = await getMarkdownReleaseNotes(baseUrl, project, version, token)
         console.log(markdownReleaseNote)
         core.setOutput("release_notes", markdownReleaseNote);
+
+        const releaseNotesUrl = await getReleaseNotesUrl(baseUrl, domain, project, version, token)
+        console.log(releaseNotesUrl)
+        core.setOutput("release_notes_url", releaseNotesUrl);
     } catch (error: any) {
         core.setFailed(error.message);
     }
@@ -83,6 +87,24 @@ function getGroupedIssues(rawValue: any, baseUrl: string): GroupedIssue[] {
     return _.map(groupedResult, (items: Issue[], key: string) => {
         return new GroupedIssue(key, items);
     });
+}
+
+async function getReleaseNotesUrl(baseUrl: string, domain: string, project: string, version: string, token: string,): Promise<string> {
+    const url = `${baseUrl}rest/api/3/project/${project}/version`
+    const response = await request.get(url, {
+        headers: {
+            Authorization: `Basic ${token}`
+        },
+        qs: {
+            query: version,
+        },
+        json: true,
+    });
+    const versionId = response.values[0]?.id
+    if (versionId == undefined) {
+        return ""
+    }
+    return `https://${domain}.atlassian.net/projects/${project}/versions/${versionId}`
 }
 
 class Issue {

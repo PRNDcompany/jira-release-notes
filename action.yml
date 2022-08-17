@@ -21,6 +21,8 @@ inputs:
 outputs:
   release_notes:
     description: 'Release notes (Markdown format)'
+  release_notes_url:
+    description: 'Release notes page URL'
 runs:
   using: 'node16'
   main: 'dist/index.js'
