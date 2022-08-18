@@ -12,22 +12,7 @@ import * as _ from 'lodash'
     const baseUrl = `https://${domain}.atlassian.net/`
 
     try {
-        const url = baseUrl + "rest/api/3/search"
-        const response = await request.get(url, {
-            headers: {
-                Authorization: `Basic ${token}`
-            },
-            qs: {
-                "jql": `project=\"${project}\" AND fixVersion =\"${version}\"`,
-                maxResults: 1000,
-                fields: "project,issuetype,summary",
-            },
-            json: true,
-        });
-
-        const title = getTitle(response, version)
-        const note = getNote(response, baseUrl)
-        const markdownReleaseNote = title + note
+        const markdownReleaseNote = await getMarkdownReleaseNotes(baseUrl, project, version, token)
         console.log(markdownReleaseNote)
         core.setOutput("release_notes", markdownReleaseNote);
     } catch (error: any) {
@@ -35,6 +20,26 @@ import * as _ from 'lodash'
     }
 
 })();
+
+async function getMarkdownReleaseNotes(baseUrl: string, project: string, version: string, token: string,): Promise<string> {
+    const url = baseUrl + "rest/api/3/search"
+    const response = await request.get(url, {
+        headers: {
+            Authorization: `Basic ${token}`
+        },
+        qs: {
+            "jql": `project=\"${project}\" AND fixVersion =\"${version}\"`,
+            maxResults: 1000,
+            fields: "project,issuetype,summary",
+        },
+        json: true,
+    });
+
+    const title = getTitle(response, version)
+    const note = getNote(response, baseUrl)
+    return title + note
+
+}
 
 function getTitle(response: any, version: string): string {
     const projectName = response.issues[0]?.fields?.project?.name ?? ""
