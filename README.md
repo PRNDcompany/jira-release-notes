@@ -48,7 +48,8 @@ $EncodedText
 
 
 ## Outputs
-- `release_note`: Release note (Markdown format) 
+- `release_note`: Release notes (Markdown format) 
+- `release_notes_url`: Release notes URL(Jira version url) 
 
 ## Example usage
 ```yaml
