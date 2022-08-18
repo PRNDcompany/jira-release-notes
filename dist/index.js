@@ -33,28 +33,34 @@ const _ = __importStar(require("lodash"));
     const token = core.getInput("auth-token");
     const baseUrl = `https://${domain}.atlassian.net/`;
     try {
-        const url = baseUrl + "rest/api/3/search";
-        const response = await request.get(url, {
-            headers: {
-                Authorization: `Basic ${token}`
-            },
-            qs: {
-                "jql": `project=\"${project}\" AND fixVersion =\"${version}\"`,
-                maxResults: 1000,
-                fields: "project,issuetype,summary",
-            },
-            json: true,
-        });
-        const title = getTitle(response, version);
-        const note = getNote(response, baseUrl);
-        const markdownReleaseNote = title + note;
+        const markdownReleaseNote = await getMarkdownReleaseNotes(baseUrl, project, version, token);
         console.log(markdownReleaseNote);
         core.setOutput("release_notes", markdownReleaseNote);
+        const releaseNotesUrl = await getReleaseNotesUrl(baseUrl, domain, project, version, token);
+        console.log(releaseNotesUrl);
+        core.setOutput("release_notes_url", releaseNotesUrl);
     }
     catch (error) {
         core.setFailed(error.message);
     }
 })();
+async function getMarkdownReleaseNotes(baseUrl, project, version, token) {
+    const url = baseUrl + "rest/api/3/search";
+    const response = await request.get(url, {
+        headers: {
+            Authorization: `Basic ${token}`
+        },
+        qs: {
+            "jql": `project=\"${project}\" AND fixVersion =\"${version}\"`,
+            maxResults: 1000,
+            fields: "project,issuetype,summary",
+        },
+        json: true,
+    });
+    const title = getTitle(response, version);
+    const note = getNote(response, baseUrl);
+    return title + note;
+}
 function getTitle(response, version) {
     var _a, _b, _c, _d;
     const projectName = (_d = (_c = (_b = (_a = response.issues[0]) === null || _a === void 0 ? void 0 : _a.fields) === null || _b === void 0 ? void 0 : _b.project) === null || _c === void 0 ? void 0 : _c.name) !== null && _d !== void 0 ? _d : "";
@@ -91,6 +97,24 @@ function getGroupedIssues(rawValue, baseUrl) {
     return _.map(groupedResult, (items, key) => {
         return new GroupedIssue(key, items);
     });
+}
+async function getReleaseNotesUrl(baseUrl, domain, project, version, token) {
+    var _a;
+    const url = `${baseUrl}rest/api/3/project/${project}/version`;
+    const response = await request.get(url, {
+        headers: {
+            Authorization: `Basic ${token}`
+        },
+        qs: {
+            query: version,
+        },
+        json: true,
+    });
+    const versionId = (_a = response.values[0]) === null || _a === void 0 ? void 0 : _a.id;
+    if (versionId == undefined) {
+        return "";
+    }
+    return `https://${domain}.atlassian.net/projects/${project}/versions/${versionId}`;
 }
 class Issue {
     constructor(key, summary, type, url) {
