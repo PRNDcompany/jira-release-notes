@@ -26,7 +26,7 @@ import * as _ from 'lodash'
 })();
 
 async function getMarkdownReleaseNotes(baseUrl: string, project: string, version: string, token: string,): Promise<string> {
-    const url = baseUrl + "rest/api/3/search"
+    const url = baseUrl + "rest/api/3/search/jql"
     const response = await request.get(url, {
         headers: {
             Authorization: `Basic ${token}`
