@@ -45,7 +45,7 @@ const _ = __importStar(require("lodash"));
     }
 })();
 async function getMarkdownReleaseNotes(baseUrl, project, version, token) {
-    const url = baseUrl + "rest/api/3/search";
+    const url = baseUrl + "rest/api/3/search/jql";
     const response = await request.get(url, {
         headers: {
             Authorization: `Basic ${token}`
